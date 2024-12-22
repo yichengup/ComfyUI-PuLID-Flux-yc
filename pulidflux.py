@@ -1,4 +1,3 @@
-
 import torch
 from torch import nn, Tensor
 from torchvision import transforms
@@ -72,6 +71,9 @@ def forward_orig(
     y: Tensor,
     guidance: Tensor = None,
     control=None,
+    transformer_options={},
+    attn_mask: Tensor = None,
+    **kwargs  # 添加kwargs来处理任何额外的参数
 ) -> Tensor:
     if img.ndim != 3 or txt.ndim != 3:
         raise ValueError("Input img and txt tensors must have 3 dimensions.")
@@ -92,7 +94,7 @@ def forward_orig(
 
     ca_idx = 0
     for i, block in enumerate(self.double_blocks):
-        img, txt = block(img=img, txt=txt, vec=vec, pe=pe)
+        img, txt = block(img=img, txt=txt, vec=vec, pe=pe, attn_mask=attn_mask)
 
         if control is not None: # Controlnet
             control_i = control.get("input")
@@ -113,7 +115,7 @@ def forward_orig(
     img = torch.cat((txt, img), 1)
 
     for i, block in enumerate(self.single_blocks):
-        img = block(img, vec=vec, pe=pe)
+        img = block(img, vec=vec, pe=pe, attn_mask=attn_mask)
 
         if control is not None: # Controlnet
             control_o = control.get("output")
@@ -159,7 +161,7 @@ def to_gray(img):
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
 
-class PulidFluxModelLoader:
+class PulidFluxModelLoadery:
     @classmethod
     def INPUT_TYPES(s):
         return {"required": {"pulid_file": (folder_paths.get_filename_list("pulid"), )}}
@@ -179,7 +181,7 @@ class PulidFluxModelLoader:
 
         return (model,)
 
-class PulidFluxInsightFaceLoader:
+class PulidFluxInsightFaceLoadery:
     @classmethod
     def INPUT_TYPES(s):
         return {
@@ -198,7 +200,7 @@ class PulidFluxInsightFaceLoader:
 
         return (model,)
 
-class PulidFluxEvaClipLoader:
+class PulidFluxEvaClipLoadery:
     @classmethod
     def INPUT_TYPES(s):
         return {
@@ -225,7 +227,7 @@ class PulidFluxEvaClipLoader:
 
         return (model,)
 
-class ApplyPulidFlux:
+class ApplyPulidFluxy:
     @classmethod
     def INPUT_TYPES(s):
         return {
@@ -405,15 +407,15 @@ class ApplyPulidFlux:
 
 
 NODE_CLASS_MAPPINGS = {
-    "PulidFluxModelLoader": PulidFluxModelLoader,
-    "PulidFluxInsightFaceLoader": PulidFluxInsightFaceLoader,
-    "PulidFluxEvaClipLoader": PulidFluxEvaClipLoader,
-    "ApplyPulidFlux": ApplyPulidFlux,
+    "PulidFluxModelLoadery": PulidFluxModelLoadery,
+    "PulidFluxInsightFaceLoadery": PulidFluxInsightFaceLoadery,
+    "PulidFluxEvaClipLoadery": PulidFluxEvaClipLoadery,
+    "ApplyPulidFluxy": ApplyPulidFluxy,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "PulidFluxModelLoader": "Load PuLID Flux Model",
-    "PulidFluxInsightFaceLoader": "Load InsightFace (PuLID Flux)",
-    "PulidFluxEvaClipLoader": "Load Eva Clip (PuLID Flux)",
-    "ApplyPulidFlux": "Apply PuLID Flux",
+    "PulidFluxModelLoadery": "Load PuLID Flux Model y",
+    "PulidFluxInsightFaceLoadery": "Load InsightFace (PuLID Flux) y",
+    "PulidFluxEvaClipLoadery": "Load Eva Clip (PuLID Flux) y",
+    "ApplyPulidFluxy": "Apply PuLID Flux y",
 }
